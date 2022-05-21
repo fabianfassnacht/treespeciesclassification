@@ -9,7 +9,7 @@ In this lecture you will learn how to use hyperspectral data in combination with
 - Visualizing a hyperspectral image and vegetation spectra extracted from pixels
 - Conduct a supervised SVM classification using the original HyMap bands
 - Applying a PCA transformation to the Hyperspectral image (feature extraction) 
-- Conduct a supervised SVM classififcation using the PCA components as input
+- Conduct a supervised SVM classification using the PCA components as input
 - Apply an additional feature selection to the PCA components and conduct a supervised SVM classification using an automatically selected subset of the PCA components
 
 The datasets applied in this tutorial are available here:
@@ -24,7 +24,7 @@ Fassnacht, F. E.; Neumann, C.; Forster, M.; Buddenbaum, H.; Ghosh, A.; Clasen, A
 
 Ghosh, A.; Fassnacht, F. E.; Joshi, P. K.; Koch, B. (2014). A framework for mapping tree species combining Hyperspectral and LiDAR data: role of selected classifiers and sensor across three spatial scales. International journal of applied earth observation and geoinformation, 26, 49–63. doi:10.1016/j.jag.2013.05.017
 
-Additionally, a point-Shapefile is provided which contains sample points (reference positions) for 5 tree species (50 points per species, 250 in total) (**tree\_species\_KA.shp**). These reference positions were collected using visual interpretation of high-resolution images in combination with reference tree species maps provided by the local forest administration. These reference tree species maps are also provided as tif-files (**Reference\_information.tif; Reference\_information2.tif**). The latter will only be used during the interactive session on Saturday. 
+Additionally, a point-Shapefile is provided which contains sample points (reference positions) for 5 tree species (50 points per species, 250 in total) (**tree\_species\_KA.shp**). These reference positions were collected using visual interpretation of high-resolution images in combination with reference tree species maps provided by the local forest administration. These reference tree species maps are also provided as tif-files (**Reference\_information.tif; Reference\_information2.tif**). The latter can used for comparison with the classification maps produced in the tutorial. 
 
 
 ### Step 1: Loading an visualizing the hyperspectral HyMap image and the reference dataset ###
@@ -117,7 +117,7 @@ What is not optimal in this graph is that the x-axis does not show the wavelengt
 	
 In the plot, we used the species information to color-code the spectra, but as you can see this graph is quite chaotic, and it is hard to see where the spectra of one species ends and the spectra of another species start. All in all, there seems to be quite a heavy overlap between the spectral signatures of the five species. So let us try to make this plot a bit clearer by plotting the mean spectral signature of each species plus its standard deviations.
 
-We will need a bit more code to do this. There are definitely ways to code this with less lines of code, however, the solution given below makes the logical flow quite clear an may be easier to understand for people who are not yet professionals in R. For detailed information, please read the comments in the code.
+We will need a bit more code to do this. There are definitely ways to code this with less lines of code, however, the solution given below makes the logical flow quite clear and may be easier to understand for people who are not yet professionals in R. For detailed information, please read the comments in the code.
 
 	##################################
 	# plot mean + sd of each species
@@ -142,8 +142,8 @@ We will need a bit more code to do this. There are definitely ways to code this 
 	# to save the mean and sd signatures, we create an empty list object	
 	meansd <- list()
 	
-	# then we run a look in which we first build a subset of the spectral signatures dataframe so that the
-	# subset only contain the spectra of a single species.
+	# then we run a loop in which we first build a subset of the spectral signatures dataframe so that the
+	# subset only contains the spectra of a single species.
 	for (i2 in 1:5){
 	  
 	  # build subset of the dataframe where the species id = i2 
@@ -203,11 +203,11 @@ We will now prepare and run the first classification approach using all 125 band
 	trainval <- ref_data_tr[,1:125]
 	treespec <- ref_data_tr$id
 	
-As we can see, we obtain both of these variables from out **ref\_dara\_tr** dataframe which contains the spectral signature in columns 1 to 125 and the reference data in column 126 (the latter can also be directly accessed via the column name).
+As we can see, we obtain both of these variables from the **ref\_dara\_tr** dataframe which contains the spectral signature in columns 1 to 125 and the reference data in column 126 (the latter can also be directly accessed via the column name).
 
-Now we are ready to start the classification. As we have learned in earlier modules of the course, machine learning algorithms such as support vector machines, typically require a parameter tuning. That is, we try to identify the optimal settings of the classification algorithm by splitting the dataset into several parts and then use some of these parts to train the classifier (with a set of parameters) and then validate them with another part which has not been used during training. By repeatedly varying the parameters, we can find a combination of parameters, that performs exceptionally well.
+Now we are ready to start the classification. As you might already know, machine learning algorithms such as support vector machines, typically require a parameter tuning. That is, we try to identify the optimal settings of the classification algorithm by splitting the dataset into several parts and then use some of these parts to train the classifier (with a set of parameters) and then validate them with another part which has not been used during training. By repeatedly varying the parameters, we can find a combination of parameters, that performs exceptionally well.
 
-In the case of SVM we can vary two parameters: gamma and cost. **Gamma** defines how flexible the so-called hyperplane is allowed to be. The hyperplane is basically the separation-"line" between the different classes. On the other hand, **cost** describes how strongly the classifier punishes a wrongly classified sample. If cost and/or Gamma is too high, there is a risk of overfitting - however, by applying datasplits during the grid search, overfitted models will lead to bad performances. By using an automated grid-search which varies the gamma and cost values within a user-defined range, it is possible to automatically search for a good gamma/cost combination in R. The corresponding code looks like this (this might take a while to run, as a lot of different models are examined here): 
+In the case of SVM we can vary two parameters: gamma and cost. **Gamma** defines how flexible the so-called hyperplane is allowed to be. The hyperplane is basically the separation-"line" between the different classes in the feature space. On the other hand, **cost** describes how strongly the classifier punishes a wrongly classified sample. If cost and/or Gamma is too high, there is a risk of overfitting - however, by applying datasplits during the grid search, overfitted models will lead to bad performances. By using an automated grid-search which varies the gamma and cost values within a user-defined range, it is possible to automatically search for a good gamma/cost combination in R. The corresponding code looks like this (this might take a while to run, as a lot of different models are examined here): 
 
 	# set a seed to allow for reproducing the results
 	set.seed(1173)
@@ -222,7 +222,7 @@ In the case of SVM we can vary two parameters: gamma and cost. **Gamma** defines
 	# plot the results of the parameter tuning
 	plot(tune1)
 
-As you can see we will test 9 different values for gamma and 11 different cost-values. In theory, it would of course be possible to test even more combinations but the ones selected here are working quite well from  our experience. However, feel free to try out some higher and lower values if you are interested in the results. The code above will lead to the following plot:
+As you can see we will test 9 different values for gamma and 11 different cost-values. In theory, it would of course be possible to test even more combinations but the ones selected here are working quite well from our experience. However, feel free to try out some higher and lower values if you are interested in the results. The code above will lead to the following plot:
 
 ![](Tut_hyp_4.png)
 
@@ -266,15 +266,15 @@ This will result in the following tree species map:
 
 ![](Tut_hyp_6.png)
 
-On the first glance, this map looks quite plausible. We can see that many of the stands from which we collected the training data (and we hence know, that they are composed of a single species) appear quite homogeneous in the classification map. During the interactive session on Saturday we will discuss the quality of the map with more details. For this we will load the map to QGIS and compare it to two reference maps and two more classification maps that we will create in the following two steps 
+On the first glance, this map looks quite plausible. We can see that many of the stands from which we collected the training data (and we hence know, that they are composed of a single species) appear quite homogeneous in the classification map. The quality of the map could be examined with more details by loading the map into QGIS and compare it to the reference maps provided with the tutorial materials and maybe also by comparing the map with additional high-resolution Google or Bing maps which can be visualized in QGIS as well. 
 
 
 ### Step 3: Tree species classification using PCA bands ###
 
 
-As we have heard in the theoretical part of the module, feature extraction methods can help to improve the performance of models trained with hyperspectral data as they allow to compress the feature space and hence reduce colinearity of predictors. In the following we will apply the well-known principal component analysis (PCA) to the hyperspectral image to reduce the original 125 bands to a smaller number of bands carrying most of the variability of the image.
+One way to improve the accuracy of supervised classifications, particularly if working with hyperspectral data are feature extraction methods as they allow to compress the feature space and hence reduce colinearity of predictors. In the following we will apply the well-known principal component analysis (PCA) to the hyperspectral image to reduce the original 125 bands to a smaller number of bands carrying most of the variability contained in the image.
 
-To apply a PCA to a raster dataset, we can use the **rasterPCA** function of the RStoolbox package. The function actually uses only a subset of pixels to calculate the PCA transformation and then only applies the transformation to the full raster stack. In the example below, we use 1000 sample points. The more points are used, the longer the PCA calculation may last. We also set the spca parameter to TRUE to scale all the bands (this is not absolutely necessary but may be reasonable to do in our case as for example vegetation spectra have differing reflectance value ranges in the visual and near-infrared region; by scaling all value ranges of the bands, such constant differences are smoothed out). If you are interested whether this has any effect, you can also re-run the code later and switch of spca. To run the PCA in R we execute the following code (this may take a while!):
+To apply a PCA to a raster dataset, we can use the **rasterPCA** function of the RStoolbox package. The function actually uses only a subset of pixels to calculate the PCA transformation and then only applies the transformation to the full raster stack. In the example below, we use 1000 sample points. The more points are used, the longer the PCA calculation may last. We also set the spca parameter to TRUE to scale all the bands (this is not absolutely necessary but may be reasonable to do in our case as for example vegetation spectra have differing reflectance value ranges in the visual and near-infrared region; by scaling all value ranges of the bands, such constant differences are smoothed out). If you are interested whether this has any effect, you can also re-run the code later and switch off the spca parameter. To run the PCA in R we execute the following code (this may take a while!):
 
 	############################################
 	# prepare classification using PCA
@@ -337,7 +337,7 @@ This will produce the following output (you will additionally see the plot from 
 
 ![](Tut_hyp_9.png)
 
-As we can see, the classification accuracy using only the first 15 PCA components as input is slightly better than the accuracy we obtained using all hyperspectral bands. Your results might vary slightly, depending on how you set your seed value.
+As we can see, the classification accuracy using only the first 15 PCA components as input is slightly better than the accuracy we obtained using all hyperspectral bands. Your results might vary slightly, depending on how you set your seed value in the function set.seed().
 
 Finally, let us also produce a prediction map for this classification approach by running the following code:
 
@@ -370,7 +370,7 @@ First we select the first 30 components of the PCA raster stack and extract the 
 	pca_ras2 <- pca_ras[[1:30]]
 	trainval_pca2 <- extract(pca_ras2, ref)
 
-Then we run the feature selection algorithm VSURF. This algorithm is based on Random Forest and in some of our recent studies it performed quite well. Some more detailed descriptions on VSURF can be found in the second Tutorial of this module. Be aware that I set the option **parallel** to TRUE and **ncores** = 3. This means in this case, R will use 3 CPUs/cores to run the algorithm. In case your computer only has one core/CPU, you have to set parallel to FALSE. If you do not know how many cores your computer has, you can also try to run the code and if it fails, you can reduce the number of cores or deactivate the **parallel** setting.
+Then we run the feature selection algorithm VSURF. This algorithm is based on Random Forest and in some of our recent studies it performed quite well. Some more detailed descriptions on VSURF can be found in Genuer, R., Poggi, J.-M., Tuleau-Malot, C., 2015. VSURF: an r package for VariableSelection using random forests. R J. R Found. Statist. Comput. 7 (2), 19–33. Be aware that I set the option **parallel** to TRUE and **ncores** = 3. This means in this case, R will use 3 CPUs/cores to run the algorithm. In case your computer only has one core/CPU, you have to set parallel to FALSE. If you do not know how many cores your computer has, you can also try to run the code and if it fails, you can reduce the number of cores or deactivate the **parallel** setting.
 
 	vsurf_pca <- VSURF(trainval_pca2, as.factor(treespec), ntree=500, parallel = T, ncores = 3)
 
@@ -413,7 +413,7 @@ This will result in the following output:
 
 ![](Tut_hyp_12.png)
 
-As we can see, we could increase the classification accuracy by almost 10% with this additional feature selection step. This is quitea lot! As last step, we can now also produce the corresponding classification map by running:
+As we can see, we could increase the classification accuracy by almost 10% with this additional feature selection step. This is quite a lot! As last step, we can now also produce the corresponding classification map by running:
 	
 	# set output directory to save classification map
 	setwd("D:/1_tree_species_Karlsruhe/2_data/results")
@@ -430,7 +430,7 @@ Which will result in the following map:
 
 ![](Tut_hyp_13.png)
 
-We have now created three tree species maps using our hyperspectral image and the reference data. On Saturday we will discuss these results a bit more in class.
+We have now created three tree species maps using our hyperspectral image and the reference data. Feel free to have a closer look at the maps and think about how they differ and which one is agreeing best with the reference maps as well as with the visual impression when comparing the maps with high-resolution Google and Bing images in QGIS.
 
 ### Exercise ###
 
