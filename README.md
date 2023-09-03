@@ -31,10 +31,10 @@ Additionally, a point-Shapefile is provided which contains sample points (refere
 
 As first step, load all necessary R packages by executing the following code:
 
-	require(raster)
+	require(terra)
 	require(e1071)
 	require(caret)
-	require(rgdal)
+	require(sf)
 	require(matrixStats)
 	require(RStoolbox)
 	require(factoextra)
@@ -42,7 +42,7 @@ As first step, load all necessary R packages by executing the following code:
 
 R will give you a warning message in case a package is not installed yet. If this is the case, please install the packages either through the main menu of Rstudio by selecting **"Tools" =>** **"Install packages"** and then following the appearing dialogue, or by entering the corresponding R code to install the packages into the console. E.g., to install the package "raster" use the code:
 
-	install.packages("raster")	
+	install.packages("terra")	
 
 After all packages are successfully installed, we will load the hyperspectral image and the shapefile containing the reference information. You should already be familiar with the corresponding code in R from earlier practicals of the course.
 
@@ -65,13 +65,13 @@ After loading the hyperspectral image, we can obtain some basic information abou
 	# number of rows of the hyperspectral image
 	nrow(hym_img)
 	# number of bands of the hyperspectral image
-	length(hym_img@layers)
+	nlyr(hym_img)
 	# summary information of all bands
-	hym_img@layers
+	summary(hym_img)
 	# summary information of a specific band, here band number 5
-	hym_img@layers[5]
+	summary(hym_img[[5]])
 	# check the geographic extent of the image
-	extent(hym_img)
+	ext(hym_img)
 	# check the defined coordinate system
 	crs(hym_img)
 
@@ -81,7 +81,7 @@ While we do not exlicitly need these commands right now, it is still important t
 	plotRGB(hym_img, r=21, g=14, b=7, stretch="hist")
 	# add reference points
 	par(new=T)
-	plot(ref, col=ref@data$id, add=T)
+	plot(ref, col=ref$id, add=T)
 
 This will result in the following plot:
 
@@ -92,11 +92,9 @@ In the given plot, coniferous stands are depicted in green and broadleaved stand
 As next step, we will now extract the spectral values of the HyMap image at each of the 250 reference point locations. So we will have 50 spectral signatures for each tree species. To do this we run:
 
 	# extract spectral signatures at the reference data points
-	ref_data_tr <- extract(hym_img, ref)
+	ref_data_tr <- extract(hym_img, ref, ID=F)
 
-Depending on the performance of your computer, this will take a bit of time, as the image has quite a lot of bands. Once, we have extracted the values, we will transform the resulting data matrix into a data frame by running:
-		
-	ref_data_tr <- as.data.frame(ref_data_tr)
+Depending on the performance of your computer, this will take a bit of time, as the image has quite a lot of bands. Once, we have extracted the values, the values will be available in a dataframe.
 
 Now, we can have a look at the extracted spectral signature by running the plot command in a loop to plot all spectral signatures into the same plot window:
 
@@ -312,7 +310,10 @@ this will result in the following plot:
 
 As we can see, the first three PCs show quite a lot of variation related to the image contents. PC3 does not show too many patterns, due to a few outlayer value in the urban area (the green dot) - but PC3 actually still does contain a lot variation (this would become visible if the image stretched would be adapted). On the other hand, the last three PCs seem to only show random noise. Based on the combination of the eigenvalue plot above and this visual examination we can now decide how many of the PCs we want to use in our classification. For now, we will simply select the first 15 components assuming that most of the variability in the image is covered by these components. Hence, we extract the values of the first 15 PCs from the reference sample locations using:
 
-	trainval_pca <- extract(pca_ras[[1:15]], ref)
+	# convert the raster object to a terra rast-object
+	pca_ras <- rast(pca_ras)
+ 	# extract values
+	trainval_pca <- extract(pca_ras[[1:15]], ref, ID=F)
 	
 Then, we run the same SVM classification as we did before, including also the parameter tuning:
 
@@ -368,7 +369,7 @@ First we select the first 30 components of the PCA raster stack and extract the 
 
 	set.seed(23)
 	pca_ras2 <- pca_ras[[1:30]]
-	trainval_pca2 <- extract(pca_ras2, ref)
+	trainval_pca2 <- extract(pca_ras2, ref, ID=F)
 
 Then we run the feature selection algorithm VSURF. This algorithm is based on Random Forest and in some of our recent studies it performed quite well. Some more detailed descriptions on VSURF can be found in Genuer, R., Poggi, J.-M., Tuleau-Malot, C., 2015. VSURF: an r package for VariableSelection using random forests. R J. R Found. Statist. Comput. 7 (2), 19–33. Be aware that I set the option **parallel** to TRUE and **ncores** = 3. This means in this case, R will use 3 CPUs/cores to run the algorithm. In case your computer only has one core/CPU, you have to set parallel to FALSE. If you do not know how many cores your computer has, you can also try to run the code and if it fails, you can reduce the number of cores or deactivate the **parallel** setting.
 
