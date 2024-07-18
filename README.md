@@ -60,7 +60,7 @@ After all packages are successfully installed, we will load the hyperspectral im
      	hym_img <- c(hym_img1, hym_img2, hym_img3)
 	
 	# load reference data
-	ref <- readOGR(".", "tree_species_KA")
+	ref <- vect("tree_species_KA.shp")
 
 After loading the hyperspectral image, we can obtain some basic information about the data using some standard commands of the Raster package:
 
