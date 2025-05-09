@@ -50,14 +50,15 @@ After all packages are successfully installed, we will load the hyperspectral im
 	setwd("D:/Diplomado/Tut_superv_class_hyper/2_data")
 	
 	# load hyperspectral image
-	hym_img1 <- rast("HyMap_125bands_Karlsruhe2.tif")
+	hym_img <- rast("HyMap_125bands_Karlsruhe2.tif")
 
  	# optionally load multiple images and create stack
-  	hym_img2 <- rast("Image_2.tif")
-   	hym_img3 <- rast("Image_3.tif")
+  	#hym_img1 <- rast("Image_1.tif")
+   	#hym_img2 <- rast("Image_2.tif")
+   	#hym_img3 <- rast("Image_3.tif")
 
     	# now stack images
-     	hym_img <- c(hym_img1, hym_img2, hym_img3)
+     	#hym_img <- c(hym_img1, hym_img2, hym_img3)
 	
 	# load reference data
 	ref <- vect("tree_species_KA.shp")
